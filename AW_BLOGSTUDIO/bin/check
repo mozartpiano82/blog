@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# 검수기 — 패키지 안에서 자립 실행된다.
+# 밖의 소스를 참조하면 고객에게 폴더만 줬을 때 안 돈다. 실제 구동에서 그렇게 터졌다.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec node --no-warnings "$HERE/lib/checker.mjs" "$@" --ws "$HERE/.."

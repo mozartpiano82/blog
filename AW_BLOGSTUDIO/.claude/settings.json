@@ -1,0 +1,13 @@
+{
+  "$설명": "담당 호출 문지기. 글쓰기.md 에 적어두는 것만으로는 안 지켜져서(2026-08-26 사고) 훅으로 강제한다.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Task|Agent|Write|Edit|Bash",
+        "hooks": [
+          { "type": "command", "command": "node bin/lib/guard.mjs", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

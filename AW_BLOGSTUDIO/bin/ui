@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# 대시보드 — 브라우저로 열린다. 파일탐색기를 왕복하지 않아도 된다.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec node --no-warnings "$HERE/lib/ui.mjs" "$HERE/.."
