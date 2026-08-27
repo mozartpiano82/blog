@@ -1,0 +1,10 @@
+# AW BlogStudio 2.51.1 — 드리는 파일 목록
+#
+# 만든날: 2026-08-26 10:11:26
+# 커밋  : c2143ca766a0c9a5a14e30315baaaeb03dbab1b6
+#
+# SHA-256
+e5edd21f8b0810904f60c1eed0ab300a2ad3323afecb9f5bbbfae0dfb36482f0  AW_BLOGSTUDIO_처음설치_맥.zip
+af06a49c851e830084eb42877af5b0d79f4a40a84648c4da7e60a5b617dd8ec7  AW_BLOGSTUDIO_처음설치_윈도우.zip
+0a18382c4a35a975c73f3383faf91a38180af70e92d9b11e8a079f2b37f1ff26  업데이트_2.51.1_맥.zip
+d6abf2b011452b7d34c8c262e58eb4a99d67af1b84d02dabefd0e8d5254d25d2  업데이트_2.51.1_윈도우.zip
