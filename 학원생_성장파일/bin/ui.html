@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학원생 성장파일</title>
+<style>
+  :root { --bg:#faf8f4; --surface:#fff; --ink:#1f1d1a; --muted:#6f6a62; --line:#e7e2d8; --accent:#8a5a2b; --accent-ink:#fff; --accent-soft:#f3e9dc; --warn-soft:#fdf1d6; --danger:#b4412f; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#171513; --surface:#211e1b; --ink:#f1ece4; --muted:#a59d91; --line:#36312b; --accent:#e0a96d; --accent-ink:#1b140d; --accent-soft:#3a2e22; --warn-soft:#3b311c; --danger:#ef8a74; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
+  main { max-width:1080px; margin:0 auto; padding:28px 16px 80px; }
+  h1 { font-size:26px; margin:0; }
+  h2 { font-size:19px; margin:0 0 12px; }
+  .top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  button { font:inherit; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:8px 14px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600; }
+  button.link { border:0; background:none; color:var(--accent); padding:4px 0; }
+  button.danger { color:var(--danger); }
+  input, textarea, select { font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:7px 10px; width:100%; }
+  textarea { resize:vertical; min-height:60px; }
+  label { display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
+  .hint { color:var(--muted); font-size:14px; }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:20px; }
+  .notice { background:var(--warn-soft); border-color:transparent; }
+  .notice li { margin:6px 0; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .notice select { width:auto; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .student { background:var(--surface); border:2px dashed transparent; outline:1px solid var(--line); border-radius:14px; padding:16px; cursor:pointer; min-height:120px; display:flex; flex-direction:column; gap:4px; }
+  .student:hover { outline-color:var(--accent); }
+  .student.drag, .drop.drag { border-color:var(--accent); background:var(--accent-soft); }
+  .student .name { font-size:19px; font-weight:700; }
+  .student .sub { color:var(--muted); font-size:14px; }
+  .student .count { margin-top:auto; color:var(--accent); font-weight:600; font-size:14px; }
+  .add { display:flex; align-items:center; justify-content:center; color:var(--muted); font-weight:600; }
+  .drop { border:2px dashed var(--line); border-radius:14px; padding:22px; text-align:center; color:var(--muted); margin-bottom:20px; }
+  .fields { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+  .videos { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px; }
+  .video { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .video video { display:block; width:100%; aspect-ratio:16/10; background:#000; object-fit:contain; }
+  .video .body { padding:12px; display:grid; gap:8px; }
+  .video .foot { display:flex; justify-content:space-between; align-items:center; }
+  .toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:999px; font-size:15px; opacity:0; transition:opacity .2s; pointer-events:none; max-width:calc(100% - 32px); }
+  .toast.on { opacity:1; }
+  dialog { border:1px solid var(--line); border-radius:16px; background:var(--surface); color:var(--ink); padding:20px; width:min(420px, calc(100% - 32px)); }
+  dialog::backdrop { background:rgba(0,0,0,.35); }
+  dialog .fields { grid-template-columns:1fr; }
+  .empty { text-align:center; color:var(--muted); padding:40px 0; }
+  @media (max-width:560px) { h1 { font-size:22px; } .videos { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<dialog id="addDlg">
+  <form method="dialog" id="addForm">
+    <h2>학생 추가하기</h2>
+    <div class="fields">
+      <div><label for="f-name">이름</label><input id="f-name" required maxlength="40" placeholder="김민지"></div>
+      <div><label for="f-grade">학년·반 (없어도 돼요)</label><input id="f-grade" maxlength="30" placeholder="초3 · 체르니100"></div>
+      <div><label for="f-start">다니기 시작한 날 (없어도 돼요)</label><input id="f-start" type="date"></div>
+    </div>
+    <p class="hint">추가하시면 넣는 곳에 이 학생 이름의 폴더가 생겨요. 거기에 영상만 넣으셔도 정리돼요.</p>
+    <div class="row" style="justify-content:flex-end">
+      <button value="cancel" formnovalidate>그만두기</button>
+      <button class="primary" value="ok">학생 추가하기</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const enc = encodeURIComponent;
+let S = { students: [], unmatched: [], waiting: [], version: 0 };
+let view = { student: null };
+try { view.student = sessionStorage.getItem('student'); } catch {}
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+async function call(method, url, body) {
+  const r = await fetch(url, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.오류 || '잘 안 됐어요');
+  return data;
+}
+
+async function load() {
+  S = await call('GET', '/api/state');
+  render();
+}
+
+function go(name) {
+  view.student = name;
+  try { name ? sessionStorage.setItem('student', name) : sessionStorage.removeItem('student'); } catch {}
+  render(); scrollTo(0, 0);
+}
+
+const pretty = (d) => { const [y, m, dd] = d.slice(0, 10).split('-').map(Number); return `${y}년 ${m}월 ${dd}일`; };
+
+function render() {
+  const s = view.student && S.students.find((x) => x.이름 === view.student);
+  if (view.student && !s) view.student = null;
+  $('#app').innerHTML = s ? studentView(s) : homeView();
+  bind();
+}
+
+function homeView() {
+  const waiting = S.waiting.length ? `<p class="hint">넣는 곳에서 영상 ${S.waiting.length}개가 복사되고 있어요. 끝나면 바로 정리해요.</p>` : '';
+  const options = S.students.map((s) => `<option>${esc(s.이름)}</option>`).join('');
+  const unmatched = S.unmatched.length ? `
+    <div class="panel notice">
+      <h2>누구 영상인지 골라주세요</h2>
+      <p class="hint">파일 이름에 학생 이름이 없어서 알아보지 못했어요.</p>
+      <ul style="list-style:none;padding:0;margin:0">
+        ${S.unmatched.map((u, i) => `<li><span>${esc(u.파일)}</span>
+          <select data-assign-sel="${i}">${options ? `<option value="">학생 고르기</option>${options}` : '<option value="">먼저 학생을 추가해주세요</option>'}</select>
+          <button data-assign="${i}">이 학생에게 넣기</button></li>`).join('')}
+      </ul>
+    </div>` : '';
+  const cards = S.students.map((s) => `
+    <div class="student" data-open="${esc(s.이름)}" data-drop="${esc(s.이름)}">
+      <div class="name">${esc(s.이름)}</div>
+      <div class="sub">${esc(s.학년 || '')}</div>
+      <div class="sub">${s.영상[0] ? `최근 영상 ${pretty(s.영상[0].날짜)}` : '아직 영상이 없어요'}</div>
+      <div class="count">영상 ${s.영상.length}개</div>
+    </div>`).join('');
+  return `
+    <div class="top">
+      <h1>학원생 성장파일</h1>
+      <div class="row">
+        <button data-act="openDrop">넣는 곳 열기</button>
+        <button data-act="organize">지금 정리하기</button>
+      </div>
+    </div>
+    <div class="panel">
+      <b>영상만 넣으시면 돼요.</b> 두 가지 중 편한 걸로 하세요.
+      <ol class="hint" style="margin:8px 0 0;padding-left:20px">
+        <li>아래 학생 칸에 영상을 <b>끌어다 놓기</b></li>
+        <li><b>넣는 곳 열기</b>를 눌러 학생 이름 폴더에 넣기 · 파일 이름에 학생 이름이 있으면 바깥에 넣으셔도 알아서 찾아가요</li>
+      </ol>
+      <p class="hint" style="margin:8px 0 0">찍은 날짜를 읽어서 순서대로 쌓고, 학생마다 성장파일을 새로 만들어요.</p>
+      ${waiting}
+    </div>
+    ${unmatched}
+    <div class="grid">
+      ${cards}
+      <div class="student add" data-act="add">+ 학생 추가하기</div>
+    </div>
+    ${S.students.length ? '' : '<p class="empty">첫 학생을 추가하시면 시작할 수 있어요.</p>'}`;
+}
+
+function studentView(s) {
+  const n = enc(s.이름);
+  const vids = s.영상.map((v) => `
+    <div class="video" data-vid="${esc(v.id)}">
+      <video src="/학생/${n}/영상/${enc(v.파일)}#t=0.1" controls preload="metadata" playsinline></video>
+      <div class="body">
+        <div><label>찍은 날</label><input type="datetime-local" data-f="날짜" value="${esc(v.날짜.replace(' ', 'T'))}"></div>
+        <div><label>곡 / 연습 내용</label><input data-f="곡" maxlength="120" value="${esc(v.곡)}" placeholder="예) 체르니 100 - 12번"></div>
+        <div><label>선생님 메모</label><textarea data-f="메모" maxlength="2000" placeholder="이번에 좋아진 점, 다음에 연습할 것">${esc(v.메모)}</textarea></div>
+        <div class="foot"><span class="hint">${esc(v.원본이름 || '')}</span><button class="link danger" data-del="${esc(v.id)}">지우기</button></div>
+      </div>
+    </div>`).join('');
+  return `
+    <div class="top">
+      <div class="row"><button class="link" data-act="home">← 전체 학생</button></div>
+      <div class="row">
+        <button data-act="openFolder">학생 폴더 열기</button>
+        <a href="/학생/${n}/성장파일.html" target="_blank"><button class="primary">성장파일 보기</button></a>
+      </div>
+    </div>
+    <h1 style="margin-bottom:16px">${esc(s.이름)}</h1>
+    <div class="panel">
+      <div class="fields">
+        <div><label>학년·반</label><input data-s="학년" maxlength="30" value="${esc(s.학년)}" placeholder="초3 · 체르니100"></div>
+        <div><label>다니기 시작한 날</label><input data-s="시작일" type="date" value="${esc(s.시작일)}"></div>
+      </div>
+      <div style="margin-top:12px"><label>학생 소개 (성장파일 맨 위에 나와요)</label><textarea data-s="메모" maxlength="2000">${esc(s.메모)}</textarea></div>
+    </div>
+    <div class="drop" data-drop="${esc(s.이름)}">여기에 영상을 끌어다 놓으면 ${esc(s.이름)} 학생에게 들어가요</div>
+    <h2>영상 ${s.영상.length}개 <span class="hint" style="font-weight:400">최근 것부터</span></h2>
+    ${vids ? `<div class="videos">${vids}</div>` : '<p class="empty">아직 영상이 없어요. 위 칸에 끌어다 놓아주세요.</p>'}`;
+}
+
+function bind() {
+  document.querySelectorAll('[data-open]').forEach((el) => el.onclick = () => go(el.dataset.open));
+  document.querySelectorAll('[data-act]').forEach((el) => el.onclick = (e) => { e.stopPropagation(); actions[el.dataset.act]?.(); });
+  document.querySelectorAll('[data-drop]').forEach((el) => {
+    el.ondragover = (e) => { e.preventDefault(); el.classList.add('drag'); };
+    el.ondragleave = () => el.classList.remove('drag');
+    el.ondrop = (e) => { e.preventDefault(); e.stopPropagation(); el.classList.remove('drag'); upload(el.dataset.drop, [...e.dataTransfer.files]); };
+  });
+  document.querySelectorAll('[data-assign]').forEach((el) => el.onclick = async () => {
+    const i = +el.dataset.assign; const name = $(`[data-assign-sel="${i}"]`).value;
+    if (!name) return toast('학생을 먼저 골라주세요');
+    try { S = await call('POST', '/api/assign', { 파일: S.unmatched[i].파일, 이름: name }); render(); toast(`${name} 학생에게 넣었어요`); } catch (e) { toast(e.message); }
+  });
+  const s = view.student;
+  if (!s) return;
+  document.querySelectorAll('[data-s]').forEach((el) => el.onchange = async () => {
+    try { await call('PATCH', `/api/students/${enc(s)}`, { [el.dataset.s]: el.value }); toast('저장했어요'); await load(); } catch (e) { toast(e.message); }
+  });
+  document.querySelectorAll('[data-vid] [data-f]').forEach((el) => el.onchange = async () => {
+    const id = el.closest('[data-vid]').dataset.vid;
+    try { await call('PATCH', `/api/students/${enc(s)}/videos/${id}`, { [el.dataset.f]: el.value }); toast('저장했어요'); if (el.dataset.f === '날짜') await load(); else S = await call('GET', '/api/state'); } catch (e) { toast(e.message); }
+  });
+  document.querySelectorAll('[data-del]').forEach((el) => el.onclick = async () => {
+    if (!confirm('이 영상을 지울까요? 휴지통 폴더로 옮겨서 나중에 되살릴 수 있어요.')) return;
+    try { await call('DELETE', `/api/students/${enc(s)}/videos/${el.dataset.del}`); toast('휴지통으로 옮겼어요'); await load(); } catch (e) { toast(e.message); }
+  });
+}
+
+const actions = {
+  home: () => go(null),
+  add: () => { $('#addForm').reset(); $('#addDlg').showModal(); $('#f-name').focus(); },
+  openDrop: () => call('POST', '/api/open', { 곳: '넣는곳' }),
+  openFolder: () => call('POST', '/api/open', { 곳: '학생', 이름: view.student }),
+  organize: async () => { S = await call('POST', '/api/organize'); render(); toast('정리했어요'); },
+};
+
+$('#addDlg').addEventListener('close', async () => {
+  if ($('#addDlg').returnValue !== 'ok') return;
+  try {
+    await call('POST', '/api/students', { 이름: $('#f-name').value, 학년: $('#f-grade').value, 시작일: $('#f-start').value });
+    toast(`${$('#f-name').value} 학생을 추가했어요`);
+    await load();
+  } catch (e) { toast(e.message); }
+});
+
+const VIDEO = /\.(mp4|mov|m4v|avi|mkv|webm|3gp|wmv|mts)$/i;
+let uploading = false;
+async function upload(name, files) {
+  const vids = files.filter((f) => VIDEO.test(f.name));
+  if (!vids.length) return toast('영상 파일만 넣을 수 있어요');
+  uploading = true;
+  let done = 0;
+  for (const f of vids) {
+    toast(`${name} 학생에게 올리는 중이에요 (${done + 1}/${vids.length})`);
+    try {
+      const r = await fetch(`/api/upload/${enc(name)}?filename=${enc(f.name)}&mtime=${f.lastModified || 0}`, { method: 'PUT', body: f });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).오류 || '올리지 못했어요');
+      done++;
+    } catch (e) { toast(`${f.name}: ${e.message}`); }
+  }
+  uploading = false;
+  await load();
+  toast(`영상 ${done}개를 ${name} 학생에게 넣었어요`);
+}
+
+// 넣는 곳에 영상이 들어오면 화면도 따라 바뀐다. 무언가 적고 있을 때는 건드리지 않는다.
+setInterval(async () => {
+  if (uploading || document.hidden) return;
+  try {
+    const { version } = await call('GET', '/api/version');
+    const typing = document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    const playing = [...document.querySelectorAll('video')].some((v) => !v.paused);
+    if (version !== S.version && !typing && !playing && !$('#addDlg').open) await load();
+  } catch {}
+}, 3000);
+
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (view.student) upload(view.student, [...e.dataTransfer.files]);
+  else toast('학생 칸 위에 놓아주세요');
+});
+
+load().catch(() => { $('#app').innerHTML = '<p class="empty">프로그램이 꺼져 있어요. 성장파일 아이콘을 다시 눌러주세요.</p>'; });
+</script>
+</body>
+</html>
